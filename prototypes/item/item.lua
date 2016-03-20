@@ -1,0 +1,44 @@
+data:extend(
+{
+    {
+        type = "item",
+        name = "charged-battery",
+        icon = "__RoboMiner__/graphics/icons/charged-battery.png",
+        flags = {"goes-to-main-inventory"},
+        subgroup = "intermediate-product",
+        order = "i[battery]",
+        stack_size = 200
+    },
+    {
+        type = "item",
+        name = "robo-mining-drill",
+        icon = "__RoboMiner__/graphics/icons/robo-mining-drill.png",
+        flags = {"goes-to-quickbar"},
+        subgroup = "extraction-machine",
+        order = "a[items]-b[robo-mining-drill]",
+        place_result = "robo-mining-drill",
+        stack_size = 100
+    },
+    -- dummy item, not visible
+    {
+        type = "item",
+        name = "robo-miner-logistic-chest-active-provider",
+        icon = "__base__/graphics/icons/logistic-chest-active-provider.png",
+        flags = {"goes-to-quickbar"},
+        subgroup = "logistic-network",
+        order = "b[storage]-c[logistic-chest-active-provider]",
+        place_result = "robo-miner-logistic-chest-active-provider",
+        stack_size = 50
+    },
+    {
+        type = "item",
+        name = "mining-logistics",
+        icon = "__RoboMiner__/graphics/icons/logistics-mining.png",
+        flags = {"goes-to-quickbar"},
+        subgroup = "logistic-network",
+        order = "c[signal]-a[roboport]",
+        place_result = "mining-logistics",
+        stack_size = 5
+    },
+}
+)

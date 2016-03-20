@@ -1,0 +1,9 @@
+{
+  "name": "RoboMiner",
+  "version": "{{VERSION}}",
+  "title": "RoboMiner",
+  "author": "Afforess",
+  "homepage": "http://afforess.com",
+  "description": "Logistics Mining",
+  "dependencies": ["base >= 0.12.11"]
+}
