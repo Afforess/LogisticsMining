@@ -3,7 +3,7 @@ data:extend(
     {
         type = "item",
         name = "charged-battery",
-        icon = "__RoboMiner__/graphics/icons/charged-battery.png",
+        icon = "__LogisticsMining__/graphics/icons/charged-battery.png",
         flags = {"goes-to-main-inventory"},
         subgroup = "intermediate-product",
         order = "i[battery]",
@@ -12,7 +12,7 @@ data:extend(
     {
         type = "item",
         name = "robo-mining-drill",
-        icon = "__RoboMiner__/graphics/icons/robo-mining-drill.png",
+        icon = "__LogisticsMining__/graphics/icons/robo-mining-drill.png",
         flags = {"goes-to-quickbar"},
         subgroup = "extraction-machine",
         order = "a[items]-b[robo-mining-drill]",
@@ -33,7 +33,7 @@ data:extend(
     {
         type = "item",
         name = "mining-logistics",
-        icon = "__RoboMiner__/graphics/icons/logistics-mining.png",
+        icon = "__LogisticsMining__/graphics/icons/logistics-mining.png",
         flags = {"goes-to-quickbar"},
         subgroup = "logistic-network",
         order = "c[signal]-a[roboport]",

@@ -1,4 +1,4 @@
-Repository for the Factorio RoboMiner mod.
+Repository for the Factorio Logistics Mining mod.
 
 Description
 ===========

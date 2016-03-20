@@ -2,7 +2,7 @@ data:extend({
     {
         type = "mining-drill",
         name = "robo-mining-drill",
-        icon = "__RoboMiner__/graphics/icons/robo-mining-drill.png",
+        icon = "__LogisticsMining__/graphics/icons/robo-mining-drill.png",
         flags = {"placeable-neutral", "player-creation"},
         minable = {mining_time = 1, result = "basic-mining-drill"},
         max_health = 100,
@@ -124,7 +124,7 @@ data:extend({
     {
         type = "roboport",
         name = "mining-logistics",
-        icon = "__RoboMiner__/graphics/icons/concrete-logistics.png",
+        icon = "__LogisticsMining__/graphics/icons/logistics-mining.png",
         flags = {"placeable-player", "player-creation"},
         minable = {hardness = 0.2, mining_time = 0.5, result = "mining-logistics"},
         max_health = 150,
@@ -155,14 +155,14 @@ data:extend({
         },
         base =
         {
-            filename = "__RoboMiner__/graphics/entity/concrete-logistics.png",
+            filename = "__LogisticsMining__/graphics/entity/logistics-mining.png",
             width = 136,
             height = 132,
             shift = {1, -0.75}
         },
         base_animation =
         {
-            filename = "__RoboMiner__/graphics/entity/roboport-chargepad.png",
+            filename = "__LogisticsMining__/graphics/entity/roboport-chargepad.png",
             priority = "medium",
             width = 32,
             height = 32,
@@ -172,28 +172,28 @@ data:extend({
         },
         base_patch =
         {
-            filename = "__RoboMiner__/graphics/entity/blank.png",
+            filename = "__LogisticsMining__/graphics/entity/blank.png",
             width = 1,
             height = 1,
             frame_count = 1,
         },
         door_animation =
         {
-            filename = "__RoboMiner__/graphics/entity/blank.png",
+            filename = "__LogisticsMining__/graphics/entity/blank.png",
             width = 1,
             height = 1,
             frame_count = 1,
         },
         door_animation_up =
         {
-            filename = "__RoboMiner__/graphics/entity/blank.png",
+            filename = "__LogisticsMining__/graphics/entity/blank.png",
             width = 1,
             height = 1,
             frame_count = 1,
         },
         door_animation_down =
         {
-            filename = "__RoboMiner__/graphics/entity/blank.png",
+            filename = "__LogisticsMining__/graphics/entity/blank.png",
             width = 1,
             height = 1,
             frame_count = 1,
@@ -220,7 +220,7 @@ data:extend({
         },
         construction_radius_visualisation_picture =
         {
-            filename = "__RoboMiner__/graphics/entity/roboport-concrete-radius-visualization.png",
+            filename = "__LogisticsMining__/graphics/entity/roboport-concrete-radius-visualization.png",
             width = 12,
             height = 12,
             priority = "extra-high-no-scale"
