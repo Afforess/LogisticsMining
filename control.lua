@@ -1,4 +1,5 @@
 require 'defines'
+require 'config'
 require 'libs/logger'
 
 script.on_event(defines.events.on_built_entity, function(event)
@@ -45,7 +46,7 @@ function tick_mining_logistics()
     for key, tuple in pairs(global.mining_logistics) do
         if tuple.entity == nil or not tuple.entity.valid then
             global.mining_logistics[key] = nil
-        elseif tuple.tick == (game.tick % 20) then
+        elseif tuple.tick == (game.tick % LOGISTICS_HUB_TICK_FREQUENCY) then
             update_mining_logistics(tuple)
         end
     end
@@ -56,7 +57,6 @@ function update_mining_logistics(tuple)
     local surface = tuple.entity.surface
     local position = tuple.entity.position
     local ore_type = tuple.ore_type
-    Logger.log("Mining logistics updating at " .. serpent.line(position) .. ", radius: " .. tuple.radius)
     local start_y = -(tuple.radius) + tuple.sweep
     local entities_created = 0
     for dx = -(tuple.radius), tuple.radius, 1 do
@@ -94,7 +94,7 @@ function tick_miners()
     if global.tick_updates == nil then
         return 
     end
-    local update_list = global.tick_updates[game.tick % 300]
+    local update_list = global.tick_updates[game.tick % LOGISTICS_DRILL_TICK_FREQUENCY]
     if update_list ~= nil then
         for i = #update_list, 1, -1 do
             local key = update_list[i]
@@ -102,18 +102,26 @@ function tick_miners()
             if tuple == nil or not tuple.miner.valid or not tuple.container.valid then
                 table.remove(update_list, i)
             else
-                update_miner(tuple.miner, tuple.container, tuple.ore_type)
+                update_miner(tuple)
             end
         end
     end
 end
 
-function update_miner(miner, container, ore_type)
+function update_miner(tuple)
+    local miner = tuple.miner
+    local container = tuple.container
     -- attempt to deconstruct
-    if miner.get_inventory(defines.inventory.fuel).is_empty() or not has_ore_type(miner.surface, miner.position, ore_type) then
+    if miner.get_inventory(defines.inventory.fuel).is_empty() or not has_ore_type(miner.surface, miner.position, tuple.ore_type) then
         if container.get_inventory(defines.inventory.chest).is_empty() then
-            destroy_robo_mining_drill(miner)
-            miner.order_deconstruction(miner.force)
+            -- load the container with 10 discharged (regular) batteries
+            if tuple.deconstruction_started == nil then
+                tuple.deconstruction_started = true
+                container.insert({name = "battery", count = 10})
+            else
+                destroy_robo_mining_drill(miner)
+                miner.order_deconstruction(miner.force)
+            end
         end
     end
 end
@@ -123,7 +131,6 @@ script.on_event(defines.events.on_preplayer_mined_item, function(event)
     if entity.name == "robo-mining-drill" then
         local player = game.players[event.player_index]
         local container = get_robo_mining_container(entity)
-        Logger.log("Container: " .. serpent.line(container))
         -- empty container
         if container ~= nil then
             local container_inventory = container.get_inventory(defines.inventory.chest)
@@ -152,43 +159,32 @@ script.on_event(defines.events.on_preplayer_mined_item, function(event)
 end)
 
 function destroy_robo_mining_drill(entity)
-    local container = nil
     if global.miners ~= nil then
         local key = entity_key(entity)
         local tuple = global.miners[key]
         if tuple ~= nil and tuple.container ~= nil and tuple.container.valid then
-            container = tuple.container
+            tuple.container.destroy()
         end
         global.miners[key] = nil
     end
 
-    if container ~= nil then
-        container.destroy()
-        Logger.log("Destroyed robo-mining-drill container")
-    end
     entity.get_inventory(defines.inventory.fuel).clear()
-    Logger.log("Destroyed robo-mining-drill")
 end
 
 function place_mining_logistics(entity)
-    Logger.log("Placing mining logistics hub")
-    
     if global.mining_logistics == nil then global.mining_logistics = {} end
     
     local ore_type = find_nearest_ore_type(entity.surface, entity.position, 8)
-    global.mining_logistics[entity_key(entity)] = {entity = entity, radius = 1, sweep = 0, ore_type = ore_type, tick = game.tick % 20}
+    global.mining_logistics[entity_key(entity)] = {entity = entity, radius = 1, sweep = 0, ore_type = ore_type, tick = game.tick % LOGISTICS_HUB_TICK_FREQUENCY}
 end
 
 function place_robo_mining_drill(entity)
-    Logger.log("Placing robo-mining-drill")
     container = entity.surface.create_entity({name = "robo-miner-logistic-chest-active-provider", position = entity.position, force = entity.force})
     container.destructible = false
     container.operable = false
     container.minable = false
-    Logger.log("Placed robo-mining-drill container at position: " .. serpent.line(container.position))
     
-    local coal = math.ceil(calculate_coal_amount(50))
-    Logger.log("Calculated " .. coal .. " coal needed for 50 megajoules")
+    local coal = math.ceil(calculate_coal_amount(LOGISTICS_DRILL_BATTERY_CHARGED))
     entity.get_inventory(defines.inventory.fuel).insert({name = "coal", count =  coal})
     entity.operable = false
     
@@ -196,15 +192,14 @@ function place_robo_mining_drill(entity)
     if global.tick_updates == nil then global.tick_updates = {} end
     
     local ore_type = find_ore_type(entity.surface, entity.position)
-    Logger.log("Mining drill placed on ore_type: " .. serpent.line(ore_type))
     local key = entity_key(entity)
     global.miners[key] = {miner = entity, container = container, ore_type = ore_type}
     
     -- keep a list of which miners to update each tick
-    local update_list = global.tick_updates[game.tick % 300]
+    local update_list = global.tick_updates[game.tick % LOGISTICS_DRILL_TICK_FREQUENCY]
     if update_list == nil then
         update_list = {}
-        global.tick_updates[game.tick % 300] = update_list
+        global.tick_updates[game.tick % LOGISTICS_DRILL_TICK_FREQUENCY] = update_list
     end
     table.insert(update_list, key)
 end
@@ -263,13 +258,11 @@ function entity_key(entity)
 end
 
 function get_robo_mining_container(entity)
-    Logger.log("Looking for robo-mining-drill container at position: " .. serpent.line(entity.position))
-    if global.miners == nil then
-        return nil
-    end
-    local tuple = global.miners[entity_key(entity)]
-    if tuple ~= nil and tuple.container ~= nil and tuple.container.valid then
-        return tuple.container
+    if global.miners ~= nil then
+        local tuple = global.miners[entity_key(entity)]
+        if tuple ~= nil and tuple.container ~= nil and tuple.container.valid then
+            return tuple.container
+        end
     end
     return nil
 end
