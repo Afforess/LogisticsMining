@@ -11,6 +11,16 @@ data:extend(
     },
     {
         type = "item",
+        name = "charging-assembling-machine",
+        icon = "__LogisticsMining__/graphics/icons/charging-assembling-machine-icon.png",
+        flags = {"goes-to-quickbar"},
+        subgroup = "production-machine",
+        order = "b[charging-assembling-machine]",
+        place_result = "charging-assembling-machine",
+        stack_size = 50
+    },
+    {
+        type = "item",
         name = "robo-mining-drill",
         icon = "__LogisticsMining__/graphics/icons/robo-mining-drill.png",
         flags = {"goes-to-quickbar"},

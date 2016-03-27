@@ -21,6 +21,14 @@ data:extend(
             {
                 type = "unlock-recipe",
                 recipe = "charged-battery"
+            },
+            {
+                type = "unlock-recipe",
+                recipe = "supercharged-battery"
+            },
+            {
+                type = "unlock-recipe",
+                recipe = "charging-assembling-machine"
             }
         },
         order = "b-c"

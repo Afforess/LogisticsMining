@@ -1,12 +1,15 @@
 require 'defines'
 require 'config'
 require 'libs/logger'
+require 'libs/array_pair'
+require 'libs/scan_area'
 
 script.on_event(defines.events.on_built_entity, function(event)
     if event.created_entity.name == "robo-mining-drill" then
         place_robo_mining_drill(event.created_entity)
     end
     if event.created_entity.name == "mining-logistics" then
+        event.created_entity.backer_name = ""
         place_mining_logistics(event.created_entity)
     end
 end)
@@ -16,6 +19,7 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
         place_robo_mining_drill(event.created_entity)
     end
     if event.created_entity.name == "mining-logistics" then
+        event.created_entity.backer_name = ""
         place_mining_logistics(event.created_entity)
     end
 end)
@@ -46,10 +50,73 @@ function tick_mining_logistics()
     for key, tuple in pairs(global.mining_logistics) do
         if tuple.entity == nil or not tuple.entity.valid then
             global.mining_logistics[key] = nil
+        elseif tuple.scanned ~= true then
+            if game.tick % 2 == 0 then
+                while true do
+                    if scan_mining_area(tuple) > 0 or tuple.scanned then
+                        break
+                    end
+                end
+            end
         elseif tuple.tick == (game.tick % LOGISTICS_HUB_TICK_FREQUENCY) then
             update_mining_logistics(tuple)
+            update_scan_overlay(tuple)
         end
     end
+end
+
+function update_scan_overlay(tuple)
+    if tuple.scan_countdown then
+        tuple.scan_countdown = tuple.scan_countdown - 1
+        if tuple.scan_countdown <= 0 then
+            for _, entity in pairs(tuple.scan_entities) do
+                if entity.valid then
+                    entity.destroy()
+                end
+            end
+            tuple.scan_entities = nil
+            tuple.scan_countdown = nil
+        end
+    end
+end
+
+function scan_mining_area(tuple)
+    local valid_ores = tuple.ores
+    if valid_ores == nil then
+        valid_ores = array_pair.new()
+        tuple.ores = valid_ores
+    end
+    if tuple.scan_progress == nil then
+        tuple.scan_progress = 1
+        tuple.scan_entities = {}
+        tuple.scan_countdown = 6
+    end
+    
+    local delta_pos = get_position_for_index(tuple.scan_progress)
+    if delta_pos == nil then
+        tuple.scan_progress = nil
+        tuple.scanned = true
+        array_pair.reverse(tuple.ores)
+    else
+        tuple.scan_progress = tuple.scan_progress + 1
+        
+        local surface = tuple.entity.surface
+        local ore_type = tuple.ore_type
+        local position = tuple.entity.position
+
+        local mining_position = {x = math.floor(position.x + delta_pos.x) + 0.5, y = math.floor(position.y + delta_pos.y) + 0.5}
+        if has_ore_type(surface, mining_position, ore_type) then
+            array_pair.insert(valid_ores, mining_position)
+            
+            local overlay_entity = surface.create_entity({name = "logistics_mining_70_red_overlay", force = game.forces.neutral, position = mining_position })
+            overlay_entity.minable = false
+            overlay_entity.destructible = false
+            overlay_entity.operable = false
+            table.insert(tuple.scan_entities, overlay_entity)
+            return 1
+        end
+    end
+    return 0
 end
 
 function update_mining_logistics(tuple)
@@ -57,32 +124,42 @@ function update_mining_logistics(tuple)
     local surface = tuple.entity.surface
     local position = tuple.entity.position
     local ore_type = tuple.ore_type
-    local start_y = -(tuple.radius) + tuple.sweep
     local entities_created = 0
-    for dx = -(tuple.radius), tuple.radius, 1 do
-        for dy = start_y, math.min(tuple.radius, start_y + 1), 1 do
-            if math.abs(dx) == tuple.radius or math.abs(dy) == tuple.radius then
-                local pos = {x = math.floor(position.x + dx) + 0.5, y = math.floor(position.y + dy) + 0.5}
-                entities_created = entities_created + update_mining_logistics_position(force, surface, pos, ore_type)
-                if entities_created > 4 then
-                    -- abort and continue this sweep next update
-                    return
-                end
-            end
+    local ghost_entities = tuple.ghost_entities
+    if ghost_entities == nil then
+        ghost_entities = {}
+        tuple.ghost_entities = ghost_entities
+    end
+    local num_ghosts = 0
+    for i = #tuple.ghost_entities, 1, -1 do
+        local ghost_entity = tuple.ghost_entities[i]
+        if ghost_entity.valid then
+            num_ghosts = num_ghosts + 1
+            ghost_entity.time_to_live = ghost_entity.force.ghost_time_to_live
+        else
+            table.remove(tuple.ghost_entities, i)
         end
     end
-    tuple.sweep = tuple.sweep + 1
-    if start_y >= tuple.radius then
-        tuple.radius = (tuple.radius + 1) % 25
-        tuple.sweep = 0
+    if num_ghosts >= 25 then
+        return
+    end
+    
+    local iter = array_pair.iterator(tuple.ores)
+    while(iter.has_next()) do
+        local pos = iter.next()
+        entities_created = entities_created + update_mining_logistics_position(force, surface, pos, ore_type, ghost_entities)
+        if entities_created >= 3 then
+            return
+        end
     end
 end
 
-function update_mining_logistics_position(force, surface, position, ore_type)
+function update_mining_logistics_position(force, surface, position, ore_type, ghost_entities)
     if surface.find_entity("entity-ghost", position) == nil then
         if surface.can_place_entity({name = "robo-mining-drill", position = position, force = force}) then
             if has_ore_type(surface, position, ore_type) then
-                surface.create_entity({name = "entity-ghost", inner_name = "robo-mining-drill", position = position, force = force})
+                local ghost = surface.create_entity({name = "entity-ghost", inner_name = "robo-mining-drill", position = position, force = force})
+                table.insert(ghost_entities, ghost)
                 return 1
             end
         end
@@ -175,7 +252,7 @@ function place_mining_logistics(entity)
     if global.mining_logistics == nil then global.mining_logistics = {} end
     
     local ore_type = find_nearest_ore_type(entity.surface, entity.position, 8)
-    global.mining_logistics[entity_key(entity)] = {entity = entity, radius = 1, sweep = 0, ore_type = ore_type, tick = game.tick % LOGISTICS_HUB_TICK_FREQUENCY}
+    global.mining_logistics[entity_key(entity)] = {entity = entity, ore_type = ore_type, tick = game.tick % LOGISTICS_HUB_TICK_FREQUENCY}
 end
 
 function place_robo_mining_drill(entity)

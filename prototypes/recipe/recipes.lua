@@ -1,5 +1,13 @@
 data:extend(
 {
+	{
+		type = "recipe-category",
+		name = "battery-charging"
+	},
+})
+
+data:extend(
+{
     {
         type = "recipe",
         name = "charged-battery",
@@ -15,8 +23,35 @@ data:extend(
     },
     {
         type = "recipe",
-        name = "robo-mining-drill",
+        name = "supercharged-battery",
+        category = "battery-charging",
+        energy_required = 1,
+        enabled = false,
+        ingredients =
+        {
+            {"battery", 1},
+            {type="fluid", name = "sulfuric-acid", amount = 0.1}
+        },
+        result= "charged-battery"
+    },
+    {
+        type = "recipe",
+        name = "charging-assembling-machine",
         energy_required = 4,
+        enabled = false,
+        ingredients =
+        {
+            {"effectivity-module", 5},
+            {"processing-unit", 15},
+            {"assembling-machine-3", 1}
+        },
+        result = "charging-assembling-machine"
+    },
+    {
+        type = "recipe",
+        name = "robo-mining-drill",
+        enabled = false,
+        energy_required = 2.5,
         ingredients =
         {
             {"basic-mining-drill", 1},

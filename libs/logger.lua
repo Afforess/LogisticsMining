@@ -1,6 +1,6 @@
 require "defines"
 
-Logger = {prefix='robo_miner', name = 'main', log_buffer = {}, last_write_tick = 0, last_write_size = 0, ever_written = false, debug = true}
+Logger = {prefix='logistics_mining', name = 'main', log_buffer = {}, last_write_tick = 0, last_write_size = 0, ever_written = false, debug = false}
 
 function Logger.log(str)
     local run_time_s = 0
