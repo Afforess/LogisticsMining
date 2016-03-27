@@ -12,7 +12,7 @@ data:extend(
     {
         type = "item",
         name = "charging-assembling-machine",
-        icon = "__LogisticsMining__/graphics/icons/charging-assembling-machine-icon.png",
+        icon = "__LogisticsMining__/graphics/icons/charging-assembling-machine.png",
         flags = {"goes-to-quickbar"},
         subgroup = "production-machine",
         order = "b[charging-assembling-machine]",
