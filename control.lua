@@ -7,8 +7,7 @@ require 'libs/scan_area'
 script.on_event(defines.events.on_built_entity, function(event)
     if event.created_entity.name == "robo-mining-drill" then
         place_robo_mining_drill(event.created_entity)
-    end
-    if event.created_entity.name == "mining-logistics" then
+    elseif event.created_entity.name == "mining-logistics" then
         event.created_entity.backer_name = ""
         place_mining_logistics(event.created_entity)
     end
@@ -17,8 +16,7 @@ end)
 script.on_event(defines.events.on_robot_built_entity, function(event)
     if event.created_entity.name == "robo-mining-drill" then
         place_robo_mining_drill(event.created_entity)
-    end
-    if event.created_entity.name == "mining-logistics" then
+    elseif event.created_entity.name == "mining-logistics" then
         event.created_entity.backer_name = ""
         place_mining_logistics(event.created_entity)
     end
@@ -44,23 +42,22 @@ script.on_event(defines.events.on_tick, function(event)
 end)
 
 function tick_mining_logistics()
-    if global.mining_logistics == nil then
-        return 
-    end
-    for key, tuple in pairs(global.mining_logistics) do
-        if tuple.entity == nil or not tuple.entity.valid then
-            global.mining_logistics[key] = nil
-        elseif tuple.scanned ~= true then
-            if game.tick % 2 == 0 then
-                while true do
-                    if scan_mining_area(tuple) > 0 or tuple.scanned then
-                        break
+    if global.mining_logistics then
+        for key, tuple in pairs(global.mining_logistics) do
+            if tuple.entity == nil or not tuple.entity.valid then
+                global.mining_logistics[key] = nil
+            elseif tuple.scanned ~= true then
+                if game.tick % 2 == 0 then
+                    while true do
+                        if scan_mining_area(tuple) > 0 or tuple.scanned then
+                            break
+                        end
                     end
                 end
+            elseif tuple.tick == (game.tick % LOGISTICS_HUB_TICK_FREQUENCY) then
+                update_mining_logistics(tuple)
+                update_scan_overlay(tuple)
             end
-        elseif tuple.tick == (game.tick % LOGISTICS_HUB_TICK_FREQUENCY) then
-            update_mining_logistics(tuple)
-            update_scan_overlay(tuple)
         end
     end
 end
@@ -91,7 +88,7 @@ function scan_mining_area(tuple)
         tuple.scan_entities = {}
         tuple.scan_countdown = 6
     end
-    
+
     local delta_pos = get_position_for_index(tuple.scan_progress)
     if delta_pos == nil then
         tuple.scan_progress = nil
@@ -99,7 +96,7 @@ function scan_mining_area(tuple)
         array_pair.reverse(tuple.ores)
     else
         tuple.scan_progress = tuple.scan_progress + 1
-        
+
         local surface = tuple.entity.surface
         local ore_type = tuple.ore_type
         local position = tuple.entity.position
@@ -107,7 +104,7 @@ function scan_mining_area(tuple)
         local mining_position = {x = math.floor(position.x + delta_pos.x) + 0.5, y = math.floor(position.y + delta_pos.y) + 0.5}
         if has_ore_type(surface, mining_position, ore_type) then
             array_pair.insert(valid_ores, mining_position)
-            
+
             local overlay_entity = surface.create_entity({name = "logistics_mining_70_red_overlay", force = game.forces.neutral, position = mining_position })
             overlay_entity.minable = false
             overlay_entity.destructible = false
@@ -119,42 +116,51 @@ function scan_mining_area(tuple)
     return 0
 end
 
-function update_mining_logistics(tuple)
-    local force = tuple.entity.force
-    local surface = tuple.entity.surface
-    local position = tuple.entity.position
-    local ore_type = tuple.ore_type
-    local entities_created = 0
-    local ghost_entities = tuple.ghost_entities
-    if ghost_entities == nil then
-        ghost_entities = {}
-        tuple.ghost_entities = ghost_entities
+function get_value_or_default(tbl, field, default_value)
+    if tbl[field] then
+        return tbl[field]
     end
+    tbl[field] = default_value
+    return default_value
+end
+
+function update_ghost_entities(tuple)
     local num_ghosts = 0
-    for i = #tuple.ghost_entities, 1, -1 do
-        local ghost_entity = tuple.ghost_entities[i]
+    local ghost_entities = get_value_or_default(tuple, 'ghost_entities', {})
+    for i = #ghost_entities, 1, -1 do
+        local ghost_entity = ghost_entities[i]
         if ghost_entity.valid then
             num_ghosts = num_ghosts + 1
             ghost_entity.time_to_live = ghost_entity.force.ghost_time_to_live
         else
-            table.remove(tuple.ghost_entities, i)
+            table.remove(ghost_entities, i)
         end
     end
-    if num_ghosts >= 25 then
+    return num_ghosts
+end
+
+function update_mining_logistics(tuple)
+    if update_ghost_entities(tuple) >= 25 then
         return
     end
-    
+
+    local entities_created = 0
     local iter = array_pair.iterator(tuple.ores)
     while(iter.has_next()) do
         local pos = iter.next()
-        entities_created = entities_created + update_mining_logistics_position(force, surface, pos, ore_type, ghost_entities)
+        entities_created = entities_created + update_mining_logistics_position(tuple, pos)
         if entities_created >= 3 then
             return
         end
     end
 end
 
-function update_mining_logistics_position(force, surface, position, ore_type, ghost_entities)
+function update_mining_logistics_position(tuple, position)
+    local force = tuple.entity.force
+    local surface = tuple.entity.surface
+    local ore_type = tuple.ore_type
+    local ghost_entities = tuple.ghost_entities
+
     if surface.find_entity("entity-ghost", position) == nil then
         if surface.can_place_entity({name = "robo-mining-drill", position = position, force = force}) then
             if has_ore_type(surface, position, ore_type) then
@@ -168,19 +174,16 @@ function update_mining_logistics_position(force, surface, position, ore_type, gh
 end
 
 function tick_miners()
-    if global.tick_updates == nil then
-        return 
-    end
-    local update_list = global.tick_updates[game.tick % LOGISTICS_DRILL_TICK_FREQUENCY]
-    if update_list ~= nil then
-        for i = #update_list, 1, -1 do
-            local key = update_list[i]
-            local tuple = global.miners[key]
-            if tuple == nil or not tuple.miner.valid or not tuple.container.valid then
-                table.remove(update_list, i)
-            else
-                update_miner(tuple)
-            end
+    local tick_updates = get_value_or_default(global, 'tick_updates', {})
+    local update_list = get_value_or_default(tick_updates, game.tick % LOGISTICS_DRILL_TICK_FREQUENCY, {})
+
+    for i = #update_list, 1, -1 do
+        local key = update_list[i]
+        local tuple = global.miners[key]
+        if tuple == nil or not tuple.miner.valid or not tuple.container.valid then
+            table.remove(update_list, i)
+        else
+            update_miner(tuple)
         end
     end
 end
@@ -207,29 +210,25 @@ script.on_event(defines.events.on_preplayer_mined_item, function(event)
     local entity = event.entity
     if entity.name == "robo-mining-drill" then
         local player = game.players[event.player_index]
-        local container = get_robo_mining_container(entity)
-        -- empty container
-        if container ~= nil then
-            local container_inventory = container.get_inventory(defines.inventory.chest)
-            if not container_inventory.is_empty() then 
-                -- give items to player if possible
-                if player.character ~= nil then
-                    local items = container_inventory[1]
-                    Logger.log("Attempting to insert " .. serpent.line(items) .. " into player character")
-                    local inserted = player.character.insert(items)
-                    if inserted ~= items.count then
-                        items.count = items.count - inserted
-                    else
-                        container_inventory.clear()
-                    end
+        local inventory = get_robo_mining_container_inventory(entity)
+        if not inventory.is_empty() then
+            -- give items to player if possible
+            if player.character then
+                local items = inventory[1]
+                Logger.log("Attempting to insert " .. serpent.line(items) .. " into player character")
+                local inserted = player.character.insert(items)
+                if inserted ~= items.count then
+                    items.count = items.count - inserted
+                else
+                    inventory.clear()
                 end
-                -- spill anything left on the surface
-                if not container_inventory.is_empty() then 
-                    Logger.log("Spilling itemstack: " .. serpent.line(items))
-                    entity.surface.spill_item_stack(entity.position, items)
-                end
-                container_inventory.clear()
             end
+            -- spill anything left on the surface
+            if not inventory.is_empty() then
+                Logger.log("Spilling itemstack: " .. serpent.line(items))
+                entity.surface.spill_item_stack(entity.position, items)
+            end
+            inventory.clear()
         end
         destroy_robo_mining_drill(entity)
     end
@@ -249,10 +248,18 @@ function destroy_robo_mining_drill(entity)
 end
 
 function place_mining_logistics(entity)
-    if global.mining_logistics == nil then global.mining_logistics = {} end
-    
+    local mining_logistics = get_value_or_default(global, 'mining_logistics', {})
+
     local ore_type = find_nearest_ore_type(entity.surface, entity.position, 8)
-    global.mining_logistics[entity_key(entity)] = {entity = entity, ore_type = ore_type, tick = game.tick % LOGISTICS_HUB_TICK_FREQUENCY}
+    if ore_type == nil then
+        for _, player in pairs(game.players) do
+            if player.force == entity.force then
+                player.print("No ores nearby mining logistics!")
+            end
+        end
+    else
+        mining_logistics[entity_key(entity)] = {entity = entity, ore_type = ore_type, tick = game.tick % LOGISTICS_HUB_TICK_FREQUENCY}
+    end
 end
 
 function place_robo_mining_drill(entity)
@@ -260,24 +267,19 @@ function place_robo_mining_drill(entity)
     container.destructible = false
     container.operable = false
     container.minable = false
-    
+
     local coal = math.ceil(calculate_coal_amount(LOGISTICS_DRILL_BATTERY_CHARGED))
     entity.get_inventory(defines.inventory.fuel).insert({name = "coal", count =  coal})
     entity.operable = false
-    
-    if global.miners == nil then global.miners = {} end
-    if global.tick_updates == nil then global.tick_updates = {} end
-    
+
     local ore_type = find_ore_type(entity.surface, entity.position)
     local key = entity_key(entity)
-    global.miners[key] = {miner = entity, container = container, ore_type = ore_type}
-    
+    local miners = get_value_or_default(global, 'miners', {})
+    miners[key] = { miner = entity, container = container, ore_type = ore_type }
+
     -- keep a list of which miners to update each tick
-    local update_list = global.tick_updates[game.tick % LOGISTICS_DRILL_TICK_FREQUENCY]
-    if update_list == nil then
-        update_list = {}
-        global.tick_updates[game.tick % LOGISTICS_DRILL_TICK_FREQUENCY] = update_list
-    end
+    local tick_updates = get_value_or_default(global, 'tick_updates', {})
+    local update_list = get_value_or_default(tick_updates, game.tick % LOGISTICS_DRILL_TICK_FREQUENCY, {})
     table.insert(update_list, key)
 end
 
@@ -334,11 +336,11 @@ function entity_key(entity)
     return pos_key(entity.surface, entity.position)
 end
 
-function get_robo_mining_container(entity)
+function get_robo_mining_container_inventory(entity)
     if global.miners ~= nil then
         local tuple = global.miners[entity_key(entity)]
         if tuple ~= nil and tuple.container ~= nil and tuple.container.valid then
-            return tuple.container
+            return tuple.container.get_inventory(defines.inventory.chest)
         end
     end
     return nil
