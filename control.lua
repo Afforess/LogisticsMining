@@ -102,6 +102,7 @@ function scan_mining_area(tuple)
         local position = tuple.entity.position
 
         local mining_position = {x = math.floor(position.x + delta_pos.x) + 0.5, y = math.floor(position.y + delta_pos.y) + 0.5}
+        if not ore_type then Logger.log("scan_mining_area ore_type was nil!") end
         if has_ore_type(surface, mining_position, ore_type) then
             array_pair.insert(valid_ores, mining_position)
 
@@ -163,6 +164,7 @@ function update_mining_logistics_position(tuple, position)
 
     if surface.find_entity("entity-ghost", position) == nil then
         if surface.can_place_entity({name = "robo-mining-drill", position = position, force = force}) then
+            if not ore_type then Logger.log("update_mining_logistics_position ore_type was nil!") end
             if has_ore_type(surface, position, ore_type) then
                 local ghost = surface.create_entity({name = "entity-ghost", inner_name = "robo-mining-drill", position = position, force = force})
                 table.insert(ghost_entities, ghost)
@@ -192,6 +194,7 @@ function update_miner(tuple)
     local miner = tuple.miner
     local container = tuple.container
     -- attempt to deconstruct
+    if not tuple.ore_type then Logger.log("update_miner ore_type was nil!") end
     if miner.get_inventory(defines.inventory.fuel).is_empty() or not has_ore_type(miner.surface, miner.position, tuple.ore_type) then
         if container.get_inventory(defines.inventory.chest).is_empty() then
             -- load the container with 10 discharged (regular) batteries
@@ -325,6 +328,9 @@ function dist_squared(pos_a, pos_b)
 end
 
 function has_ore_type(surface, position, ore_type)
+    if not ore_type then
+        return false
+    end
     return surface.find_entity(ore_type, position) ~= nil
 end
 

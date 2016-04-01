@@ -25,12 +25,11 @@ data:extend(
         type = "recipe",
         name = "supercharged-battery",
         category = "battery-charging",
-        energy_required = 1,
+        energy_required = 1.5,
         enabled = false,
         ingredients =
         {
             {"battery", 1},
-            {type="fluid", name = "sulfuric-acid", amount = 0.1}
         },
         result= "charged-battery"
     },
