@@ -21,14 +21,6 @@ data:extend(
             {
                 type = "unlock-recipe",
                 recipe = "charged-battery"
-            },
-            {
-                type = "unlock-recipe",
-                recipe = "supercharged-battery"
-            },
-            {
-                type = "unlock-recipe",
-                recipe = "charging-assembling-machine"
             }
         },
         order = "b-c"
@@ -59,6 +51,34 @@ data:extend(
             time = 45
         },
         order = "c-k-d",
+    },
+    {
+        type = "technology",
+        name = "automation-4",
+        icon = "__base__/graphics/technology/automation.png",
+        effects =
+        {
+            {
+                type = "unlock-recipe",
+                recipe = "charging-assembling-machine"
+            },
+            {
+                type = "unlock-recipe",
+                recipe = "supercharged-battery"
+            }
+        },
+        prerequisites = { "automation-3", "battery-2", "speed-module-3"},
+        unit = {
+            count = 150,
+            ingredients = {
+                {"science-pack-1", 3},
+                {"science-pack-2", 3},
+                {"science-pack-3", 2},
+                {"alien-science-pack", 1}
+            },
+            time = 60
+        },
+        order = "a-b-c",
     }
 }
 )

@@ -40,7 +40,7 @@ data:extend(
         enabled = false,
         ingredients =
         {
-            {"effectivity-module", 5},
+            {"speed-module-3", 5},
             {"processing-unit", 15},
             {"assembling-machine-3", 1}
         },

@@ -15,7 +15,7 @@ data:extend(
         icon = "__LogisticsMining__/graphics/icons/charging-assembling-machine.png",
         flags = {"goes-to-quickbar"},
         subgroup = "production-machine",
-        order = "b[charging-assembling-machine]",
+        order = "c[charging-assembling-machine]",
         place_result = "charging-assembling-machine",
         stack_size = 50
     },
