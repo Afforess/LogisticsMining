@@ -1,8 +1,10 @@
 require 'defines'
 require 'config'
-require 'libs/logger'
+require 'stdlib/log/logger'
 require 'libs/array_pair'
 require 'libs/scan_area'
+
+LOGGER = Logger.new('LogisticsMining')
 
 script.on_event(defines.events.on_built_entity, function(event)
     if event.created_entity.name == "robo-mining-drill" then
@@ -102,7 +104,7 @@ function scan_mining_area(tuple)
         local position = tuple.entity.position
 
         local mining_position = {x = math.floor(position.x + delta_pos.x) + 0.5, y = math.floor(position.y + delta_pos.y) + 0.5}
-        if not ore_type then Logger.log("scan_mining_area ore_type was nil!") end
+        if not ore_type then LOGGER.log("scan_mining_area ore_type was nil!") end
         if has_ore_type(surface, mining_position, ore_type) then
             array_pair.insert(valid_ores, mining_position)
 
@@ -170,7 +172,7 @@ function update_mining_logistics_position(tuple, position)
 
     if surface.find_entity("entity-ghost", position) == nil then
         if surface.can_place_entity({name = "robo-mining-drill", position = position, force = force}) then
-            if not ore_type then Logger.log("update_mining_logistics_position ore_type was nil!") end
+            if not ore_type then LOGGER.log("update_mining_logistics_position ore_type was nil!") end
             if has_ore_type(surface, position, ore_type) then
                 local ghost = surface.create_entity({name = "entity-ghost", inner_name = "robo-mining-drill", position = position, force = force})
                 table.insert(ghost_entities, ghost)
@@ -200,7 +202,7 @@ function update_miner(tuple)
     local miner = tuple.miner
     local container = tuple.container
     -- attempt to deconstruct
-    if not tuple.ore_type then Logger.log("update_miner ore_type was nil!") end
+    if not tuple.ore_type then LOGGER.log("update_miner ore_type was nil!") end
     if miner.get_inventory(defines.inventory.fuel).is_empty() or not has_ore_type(miner.surface, miner.position, tuple.ore_type) then
         if container.get_inventory(defines.inventory.chest).is_empty() then
             -- load the container with 10 discharged (regular) batteries
@@ -224,7 +226,7 @@ script.on_event(defines.events.on_preplayer_mined_item, function(event)
             -- give items to player if possible
             if player.character then
                 local items = inventory[1]
-                Logger.log("Attempting to insert " .. serpent.line(items) .. " into player character")
+                LOGGER.log("Attempting to insert " .. serpent.line(items) .. " into player character")
                 local inserted = player.character.insert(items)
                 if inserted ~= items.count then
                     items.count = items.count - inserted
@@ -234,7 +236,7 @@ script.on_event(defines.events.on_preplayer_mined_item, function(event)
             end
             -- spill anything left on the surface
             if not inventory.is_empty() then
-                Logger.log("Spilling itemstack: " .. serpent.line(items))
+                LOGGER.log("Spilling itemstack: " .. serpent.line(items))
                 entity.surface.spill_item_stack(entity.position, items)
             end
             inventory.clear()
