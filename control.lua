@@ -141,7 +141,13 @@ function update_ghost_entities(tuple)
 end
 
 function update_mining_logistics(tuple)
-    if update_ghost_entities(tuple) >= 25 then
+    local num_ghosts = update_ghost_entities(tuple)
+    if num_ghosts >= 25 then
+        return
+    end
+    local entity = tuple.entity
+    local logistics_network = entity.logistic_network
+    if num_ghosts >= logistics_network.get_item_count("robo-mining-drill") then
         return
     end
 
