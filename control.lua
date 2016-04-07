@@ -149,6 +149,9 @@ function update_mining_logistics(tuple)
     end
     local entity = tuple.entity
     local logistics_network = entity.logistic_network
+    if not logistics_network then
+        return
+    end
     if num_ghosts >= logistics_network.get_item_count("robo-mining-drill") then
         return
     end
