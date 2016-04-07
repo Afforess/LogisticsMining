@@ -113,7 +113,7 @@ data:extend({
             run_mode = "forward-then-backward",
           }
         },
-        mining_speed = 0.65,
+        mining_speed = 0.40,
         energy_source =
         {
           type = "burner",
@@ -121,8 +121,8 @@ data:extend({
           fuel_inventory_size = 1,
           emissions = 0.01
         },
-        energy_usage = "300kW",
-        mining_power = 3.5,
+        energy_usage = "200kW",
+        mining_power = 3,
         resource_searching_radius = 0.99,
         vector_to_place_result = {0, 0},
         radius_visualisation_picture =
@@ -235,7 +235,7 @@ data:extend({
              usage_priority = "secondary-input",
              emissions = 0.08 / 2
          },
-         energy_usage = "12000kW",
+         energy_usage = "10000kW",
          ingredient_count = 4,
          module_specification =
          {
