@@ -29,12 +29,18 @@ script.on_event(defines.events.on_entity_died, function(event)
     if entity.name == "robo-mining-drill" then
         destroy_robo_mining_drill(entity)
     end
+    if entity.name == "mining-logistics" then
+        destroy_mining_logistics(entity)
+    end
 end)
 
 script.on_event(defines.events.on_robot_pre_mined, function(event)
     local entity = event.entity
     if entity.name == "robo-mining-drill" then
         destroy_robo_mining_drill(entity)
+    end
+    if entity.name == "mining-logistics" then
+        destroy_mining_logistics(entity)
     end
 end)
 
@@ -47,6 +53,8 @@ function tick_mining_logistics()
     if global.mining_logistics then
         for key, tuple in pairs(global.mining_logistics) do
             if tuple.entity == nil or not tuple.entity.valid then
+                tuple.scan_countdown = -1
+                update_scan_overlay(tuple)
                 global.mining_logistics[key] = nil
             elseif tuple.scanned ~= true then
                 if game.tick % 2 == 0 then
@@ -160,9 +168,8 @@ function update_mining_logistics(tuple)
     local iter = array_pair.iterator(tuple.ores)
     while(iter.has_next()) do
         local pos = iter.next()
-        entities_created = entities_created + update_mining_logistics_position(tuple, pos)
-        if entities_created >= 3 then
-            return
+        if update_mining_logistics_position(tuple, pos) > 0 then
+            break
         end
     end
 end
@@ -249,10 +256,10 @@ script.on_event(defines.events.on_preplayer_mined_item, function(event)
 end)
 
 function destroy_robo_mining_drill(entity)
-    if global.miners ~= nil then
+    if global.miners then
         local key = entity_key(entity)
         local tuple = global.miners[key]
-        if tuple ~= nil and tuple.container ~= nil and tuple.container.valid then
+        if tuple and tuple.container and tuple.container.valid then
             tuple.container.destroy()
         end
         global.miners[key] = nil
