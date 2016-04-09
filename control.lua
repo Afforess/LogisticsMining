@@ -76,7 +76,7 @@ function update_scan_overlay(tuple)
     if tuple.scan_countdown then
         tuple.scan_countdown = tuple.scan_countdown - 1
         if tuple.scan_countdown <= 0 then
-            if tuple.scan_entities
+            if tuple.scan_entities then
                 for _, entity in pairs(tuple.scan_entities) do
                     if entity.valid then
                         entity.destroy()
