@@ -29,18 +29,12 @@ script.on_event(defines.events.on_entity_died, function(event)
     if entity.name == "robo-mining-drill" then
         destroy_robo_mining_drill(entity)
     end
-    if entity.name == "mining-logistics" then
-        destroy_mining_logistics(entity)
-    end
 end)
 
 script.on_event(defines.events.on_robot_pre_mined, function(event)
     local entity = event.entity
     if entity.name == "robo-mining-drill" then
         destroy_robo_mining_drill(entity)
-    end
-    if entity.name == "mining-logistics" then
-        destroy_mining_logistics(entity)
     end
 end)
 
