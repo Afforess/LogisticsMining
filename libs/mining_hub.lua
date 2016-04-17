@@ -13,8 +13,8 @@
      end
      mining_hub.migrate_scan_progress(hub)
 
-     if hub.scanned ~= true and game.tick % 2 == 0 then
-         while true do
+     if hub.scanned ~= true then
+         while game.tick % 2 == 0 do
              if mining_hub.scan_mining_area(hub) > 0 or hub.scanned then
                  break
              end
@@ -92,13 +92,13 @@
 
  function mining_hub.scan_mining_area(hub)
      local valid_ores = get_value_or_default(hub, 'ores', array_pair.new())
-     local scan = get_value_or_default(hub, 'scan', { progress = 1, entities = {}, countdown = {} })
+     local scan = get_value_or_default(hub, 'scan', { progress = 1, entities = {}, countdown = 6 })
 
      local delta_pos = get_position_for_index(scan.progress)
      if delta_pos == nil then
-         hub.scan = nil
          hub.scanned = true
          array_pair.reverse(valid_ores)
+         LOGGER.log("scan_mining_area: " .. serpent.line( hub))
      else
          scan.progress = scan.progress + 1
 
@@ -123,6 +123,9 @@
  end
 
  function mining_hub.update_scan_overlay(hub)
+     if hub.scan then
+         LOGGER.log("update_scan_overlay: " .. serpent.line( hub.scan))
+     end
      if hub.scan and hub.scan.countdown then
          hub.scan.countdown = hub.scan.countdown - 1
          if hub.scan.countdown <= 0 then
@@ -132,6 +135,7 @@
  end
 
  function mining_hub.delete_scan_overlay(hub)
+     LOGGER.log("delete_scan_overlay: " .. serpent.line(hub))
      if hub.scan and hub.scan.entities then
          for _, entity in pairs(hub.scan.entities) do
              if entity.valid then

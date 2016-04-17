@@ -1,5 +1,5 @@
 PACKAGE_NAME := LogisticsMining
-VERSION_STRING := 0.2.5
+VERSION_STRING := 1.0.0
 
 OUTPUT_NAME := $(PACKAGE_NAME)_$(VERSION_STRING)
 OUTPUT_DIR := build/$(OUTPUT_NAME)
@@ -34,6 +34,9 @@ package: package-copy $(OUT_FILES)
 
 clean:
 	rm -rf build/
+
+verify:
+	luacheck . --exclude-files factorio_mods/ --exclude-files build/ --exclude-files data*.lua --exclude-files prototypes/ -d --globals game global remote serpent bit32 defines script
 
 install_mod:
 	if [ -L factorio_mods ] ; \

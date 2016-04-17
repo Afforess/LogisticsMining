@@ -1,12 +1,13 @@
 require 'defines'
 require 'config'
 require 'stdlib/log/logger'
+require 'stdlib/area/position'
 require 'stdlib/game'
 require 'libs/array_pair'
 require 'libs/scan_area'
 require 'libs/mining_hub'
 
-LOGGER = Logger.new('LogisticsMining')
+LOGGER = Logger.new('LogisticsMining', 'main', true)
 
 script.on_event(defines.events.on_built_entity, function(event)
     if event.created_entity.name == "robo-mining-drill" then
