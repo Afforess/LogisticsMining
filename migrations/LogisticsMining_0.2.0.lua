@@ -1,4 +1,4 @@
-for i, force in pairs(game.forces) do 
+for _, force in pairs(game.forces) do 
     force.reset_recipes()
 
     force.recipes['charging-assembling-machine'].enabled = force.technologies["automation-4"].researched

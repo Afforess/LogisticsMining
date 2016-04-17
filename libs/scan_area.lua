@@ -3,6 +3,16 @@ _scan_area = {}
 _scanned_area = {}
 _index = 0
 
+-- this insanity creates a lookup table of the next position to scan for ores, based on an origin of 0,0
+-- the positions spiral outward from the origin, so it looks pretty to players
+-- e.g   1,  0
+--      -1,  0
+--       0,  1
+--       0, -1
+--       2,  0
+--       2,  1
+--       2, -1
+-- etc. Useful because then I don't have to recursively generate it, just find the next sequence by the next index
 function _populate_scan_area()
     local to_scan = {{x = 0, y = 0}}
     while #to_scan > 0 do

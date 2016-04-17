@@ -2,6 +2,7 @@
 -- @module entity
 
 require 'stdlib/core'
+require 'stdlib/surface'
 require 'stdlib/area/area'
 
 Entity = {}
@@ -28,20 +29,25 @@ function Entity.to_collision_area(entity)
     return Area.offset(bb, pos)
 end
 
+--- Given search criteria, a table that contains a name or type of entity to search for,
+--  and optionally surface or force, searches all loaded chunks for the entities that
+--  match the critera. Ex:
+--   Entity.final_all_entities({ type = 'unit', surface = 'nauvis' })
+--   Will return all units on the nauvis surface.
+-- @param search_criteria a table of criteria. Must contain either the name or type of an entity. May contain surface or force.
+-- @return an array of all entities that matched the criteria
 function Entity.find_all_entities(search_criteria)
     fail_if_missing(search_criteria, "missing search_criteria argument")
     if search_criteria.name == nil and search_criteria.type == nil then
         error("Missing search criteria field: name or type of entity", 2)
     end
 
-    local surface_list = { }
-    if type(search_criteria.surface) == "string" then
-        surface_list = { game.surfaces[search_criteria.surface] }
-    elseif search_criteria.surface then
-        surface_list = { search_criteria.surface }
-    else
+    local surface_list = Surface.lookup(search_criteria.surface)
+    if search_criteria.surface == nil then
         surface_list = game.surfaces
     end
+
+    local result = {}
 
     for _, surface in pairs(surface_list) do
         for chunk in surface.get_chunks() do
@@ -53,10 +59,12 @@ function Entity.find_all_entities(search_criteria)
                 force = search_criteria.force
             })
             for _, entity in ipairs(entities) do
-                array["x"..entity.position.x.."y"..entity.position.y] = entity
+                table.insert(result, entity)
             end
         end
     end
+
+    return result
 end
 
-    return Entity
+return Entity
