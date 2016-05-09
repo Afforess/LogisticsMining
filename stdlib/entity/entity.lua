@@ -29,42 +29,72 @@ function Entity.to_collision_area(entity)
     return Area.offset(bb, pos)
 end
 
---- Given search criteria, a table that contains a name or type of entity to search for,
---  and optionally surface or force, searches all loaded chunks for the entities that
---  match the critera. Ex:
---   Entity.final_all_entities({ type = 'unit', surface = 'nauvis' })
---   Will return all units on the nauvis surface.
--- @param search_criteria a table of criteria. Must contain either the name or type of an entity. May contain surface or force.
--- @return an array of all entities that matched the criteria
-function Entity.find_all_entities(search_criteria)
-    fail_if_missing(search_criteria, "missing search_criteria argument")
-    if search_criteria.name == nil and search_criteria.type == nil then
-        error("Missing search criteria field: name or type of entity", 2)
+--- Tests whether an entity has access to the field
+-- @param entity to test field access
+-- @param field_name that should be tested for
+-- @return true if the entity has access to the field, false if the entity threw an exception accessing the field
+function Entity.has(entity, field_name)
+  fail_if_missing(entity, "missing entity argument")
+  fail_if_missing(field_name, "missing field name argument")
+
+  local status = pcall(function() return entity[field_name]; end)
+  return status
+end
+
+--- Gets user data from the entity, stored in a mod's global data.
+--- <p> The data will persist between loads, and will be removed for an entity when it becomes invalid</p>
+-- @param the entity to look up data for
+-- @return the data, or nil if no data exists for the entity
+function Entity.get_data(entity)
+    fail_if_missing(entity, "missing entity argument")
+    if not global._entity_data then return nil end
+
+    local entity_name = entity.name
+    if not global._entity_data[entity_name] then return nil end
+    local entity_category = global._entity_data[entity_name]
+    for _, entity_data in pairs(entity_category) do
+        if entity_data.entity == entity then
+            return entity_data.data
+        end
     end
+    return nil
+end
 
-    local surface_list = Surface.lookup(search_criteria.surface)
-    if search_criteria.surface == nil then
-        surface_list = game.surfaces
-    end
+--- Sets user data on the entity, stored in a mod's global data.
+--- <p> The data will persist between loads, and will be removed for an entity when it becomes invalid</p>
+-- @param the entity to set data for
+-- @param the data to set, or nil to delete the data associated with the entity
+-- @return the previous data associated with the entity, or nil if the entity had no previous data
+function Entity.set_data(entity, data)
+    fail_if_missing(entity, "missing entity argument")
 
-    local result = {}
+    if not global._entity_data then global._entity_data = {} end
 
-    for _, surface in pairs(surface_list) do
-        for chunk in surface.get_chunks() do
-            local entities = surface.find_entities_filtered(
-            {
-                area = { left_top = { x = chunk.x * 32, y = chunk.y * 32 }, right_bottom = {x = (chunk.x + 1) * 32, (chunk.y + 1) * 32}},
-                name = search_criteria.name,
-                type = search_criteria.type,
-                force = search_criteria.force
-            })
-            for _, entity in ipairs(entities) do
-                table.insert(result, entity)
+    local entity_name = entity.name
+    if not global._entity_data[entity_name] then
+        global._entity_data[entity_name] = { pos_data = {}, data = {} }
+     end
+
+    local entity_category = global._entity_data[entity_name]
+
+    for i = #entity_category, 1, -1 do
+        local entity_data = entity_category[i]
+        if not entity_data.entity.valid then
+            table.remove(entity_category, i)
+        end
+        if entity_data.entity == entity then
+            local prev = entity_data.data
+            if data then
+                entity_data.data = data
+            else
+                table.remove(entity_category, i)
             end
+            return prev
         end
     end
 
-    return result
+    table.insert(entity_category, { entity = entity, data = data })
+    return nil
 end
 
 return Entity

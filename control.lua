@@ -101,7 +101,7 @@ script.on_event(defines.events.on_preplayer_mined_item, function(event)
     if entity.name == "robo-mining-drill" then
         local player = game.players[event.player_index]
         local inventory = get_robo_mining_container_inventory(entity)
-        if not inventory.is_empty() then
+        if inventory and not inventory.is_empty() then
             local items = inventory[1]
             -- give items to player if possible
             if player.character then
@@ -125,14 +125,18 @@ script.on_event(defines.events.on_preplayer_mined_item, function(event)
 end)
 
 function destroy_robo_mining_drill(entity)
+    local container_removed = false
     if global.miners then
         local key = entity_key(entity)
         local tuple = global.miners[key]
         if tuple and tuple.container and tuple.container.valid then
             tuple.container.destroy()
+            container_removed = true
         end
         global.miners[key] = nil
     end
+
+
 
     entity.get_inventory(defines.inventory.fuel).clear()
 end
