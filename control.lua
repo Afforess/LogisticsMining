@@ -2,6 +2,7 @@ require 'defines'
 require 'config'
 require 'stdlib/log/logger'
 require 'stdlib/area/position'
+require 'stdlib/entity/entity'
 require 'stdlib/game'
 require 'libs/array_pair'
 require 'libs/scan_area'
@@ -136,7 +137,15 @@ function destroy_robo_mining_drill(entity)
         global.miners[key] = nil
     end
 
-
+    -- try and find the container and remove it
+    if not container_removed then
+        LOGGER.log("Failed to remove container, attempting to find container and destroy it")
+        local area = Entity.to_selection_area(entity)
+        local entities = entity.surface.find_entities_filtered({area = area, name = 'robo-miner-logistic-chest-active-provider'})
+        for _, entity in pairs(entities) do
+            entity.destroy()
+        end
+    end
 
     entity.get_inventory(defines.inventory.fuel).clear()
 end
