@@ -53,7 +53,7 @@ data:extend(
         energy_required = 2.5,
         ingredients =
         {
-            {"basic-mining-drill", 1},
+            {"electric-mining-drill", 1},
             {"charged-battery", 10}
         },
         result = "robo-mining-drill"

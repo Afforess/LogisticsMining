@@ -2,8 +2,9 @@
   "name": "LogisticsMining",
   "version": "{{VERSION}}",
   "title": "Logistics Mining",
+  "factorio_version": "0.13",
   "author": "Afforess",
   "homepage": "http://afforess.com",
   "description": "Logistics Mining",
-  "dependencies": ["base >= 0.12.11"]
+  "dependencies": []
 }
