@@ -12,7 +12,7 @@ data:extend(
         type = "recipe",
         name = "charged-battery",
         category = "crafting-with-fluid",
-        energy_required = 33, -- 150KW * 33 = ~5MJ stored
+        energy_required = 27, -- 150KW * 27 = ~4MJ stored
         enabled = false,
         ingredients =
         {
@@ -25,7 +25,7 @@ data:extend(
         type = "recipe",
         name = "supercharged-battery",
         category = "battery-charging",
-        energy_required = 1.5,
+        energy_required = 1.2,
         enabled = false,
         ingredients =
         {
@@ -50,7 +50,7 @@ data:extend(
         type = "recipe",
         name = "robo-mining-drill",
         enabled = false,
-        energy_required = 2.5,
+        energy_required = 2,
         ingredients =
         {
             {"electric-mining-drill", 1},
