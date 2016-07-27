@@ -258,13 +258,13 @@ data:extend({
         {
           type = "electric",
           usage_priority = "secondary-input",
-          input_flow_limit = "2MW",
-          buffer_capacity = "48MJ"
+          input_flow_limit = "5MW",
+          buffer_capacity = "100MJ"
         },
-        recharge_minimum = "20MJ",
-        energy_usage = "200kW",
+        recharge_minimum = "40MJ",
+        energy_usage = "50kW",
         -- per one charge slot
-        charging_energy = "200kW",
+        charging_energy = "1000kW",
         logistics_radius = 50,
         construction_radius = 50,
         charge_approach_distance = 5,
