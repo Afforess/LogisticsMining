@@ -220,7 +220,8 @@ function has_ore_type(surface, position, ore_type)
     if not ore_type then
         return false
     end
-    return surface.find_entity(ore_type, position) ~= nil
+    local area = Position.expand_to_area(position, 0.1)
+    return surface.count_entities_filtered({area = area, name = ore_type, limit = 1}) > 0
 end
 
 function pos_key(surface, position)
