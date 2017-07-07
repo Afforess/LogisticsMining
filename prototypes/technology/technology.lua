@@ -46,7 +46,8 @@ data:extend(
             ingredients = {
                 {"science-pack-1", 1},
                 {"science-pack-2", 1},
-                {"science-pack-3", 1}
+                {"science-pack-3", 1},
+                {"production-science-pack", 1},
             },
             time = 45
         },
@@ -69,12 +70,13 @@ data:extend(
         },
         prerequisites = { "automation-3", "battery-2", "speed-module-3"},
         unit = {
-            count = 150,
+            count = 250,
             ingredients = {
-                {"science-pack-1", 3},
-                {"science-pack-2", 3},
+                {"science-pack-1", 2},
+                {"science-pack-2", 2},
                 {"science-pack-3", 2},
-                {"alien-science-pack", 1}
+                {"production-science-pack", 1},
+                {"high-tech-science-pack", 1}
             },
             time = 60
         },
