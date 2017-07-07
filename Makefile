@@ -1,5 +1,5 @@
 PACKAGE_NAME := LogisticsMining
-VERSION_STRING := 1.0.7
+VERSION_STRING := 1.0.8
 
 OUTPUT_NAME := $(PACKAGE_NAME)_$(VERSION_STRING)
 OUTPUT_DIR := build/$(OUTPUT_NAME)
@@ -23,7 +23,7 @@ endif
 $(OUTPUT_DIR)/%.lua: %.lua
 	@mkdir -p $(@D)
 	@sed $(SED_EXPRS) $< > $@
-	luac -p $@
+		luac -p $@
 
 $(OUTPUT_DIR)/%: %
 	mkdir -p $(@D)
