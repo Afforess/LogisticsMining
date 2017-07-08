@@ -205,7 +205,7 @@ data:extend({
         flags = {"placeable-player", "player-creation"},
         minable = {hardness = 0.2, mining_time = 0.5, result = "robo-miner-logistic-chest-active-provider"},
         max_health = 150,
-        selectable_in_game = true,
+        selectable_in_game = false,
         corpse = "small-remnants",
         collision_box = {{-0.35, -0.35}, {0.35, 0.35}},
         selection_box = {{-0.15, -0.15}, {0.15, 0.15}},
