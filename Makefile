@@ -23,7 +23,7 @@ endif
 $(OUTPUT_DIR)/%.lua: %.lua
 	@mkdir -p $(@D)
 	@sed $(SED_EXPRS) $< > $@
-		luac -p $@
+	luac -p $@
 
 $(OUTPUT_DIR)/%: %
 	mkdir -p $(@D)
