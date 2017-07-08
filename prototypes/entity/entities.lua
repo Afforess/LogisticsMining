@@ -177,7 +177,7 @@ data:extend({
            }
          }
         },
-        mining_speed = 0.40,
+        mining_speed = 0.2,
         energy_source =
         {
           type = "burner",
@@ -192,9 +192,10 @@ data:extend({
         radius_visualisation_picture =
         {
           filename = "__base__/graphics/entity/electric-mining-drill/electric-mining-drill-radius-visualization.png",
-          width = 3,
-          height = 3
+          width = 6,
+          height = 6
         },
+        monitor_visualization_tint = {r=78, g=173, b=255},
         fast_replaceable_group = "mining-drill"
     },
     {
@@ -204,12 +205,12 @@ data:extend({
         flags = {"placeable-player", "player-creation"},
         minable = {hardness = 0.2, mining_time = 0.5, result = "robo-miner-logistic-chest-active-provider"},
         max_health = 150,
-        selectable_in_game = false,
+        selectable_in_game = true,
         corpse = "small-remnants",
         collision_box = {{-0.35, -0.35}, {0.35, 0.35}},
         selection_box = {{-0.15, -0.15}, {0.15, 0.15}},
         fast_replaceable_group = "container",
-        inventory_size = 1,
+        inventory_size = 2,
         logistic_mode = "active-provider",
         open_sound = { filename = "__base__/sound/metallic-chest-open.ogg", volume=0.65 },
         close_sound = { filename = "__base__/sound/metallic-chest-close.ogg", volume = 0.7 },
@@ -331,7 +332,7 @@ data:extend({
         logistics_radius = 50,
         construction_radius = 50,
         charge_approach_distance = 5,
-        robot_slots_count = 4,
+        robot_slots_count = 0,
         material_slots_count = 2,
         stationing_offset = {0, 0},
         charging_offsets =
