@@ -84,10 +84,11 @@ function update_miner(tuple)
     if not tuple.ore_type then LOGGER.log("update_miner ore_type was nil!") end
     if miner.get_inventory(defines.inventory.fuel).is_empty() or not has_ore_type(miner.surface, miner.position, tuple.ore_type) then
         if container.get_inventory(defines.inventory.chest).is_empty() then
-            -- load the container with 10 discharged (regular) batteries
+            -- load the container with 10 discharged (regular) batteries and the active provider chest
             if tuple.deconstruction_started == nil then
                 tuple.deconstruction_started = true
                 container.insert({name = "battery", count = 10})
+                container.insert({name = "logistic-chest-active-provider", count = 1})
             else
                 destroy_robo_mining_drill(miner)
                 miner.order_deconstruction(miner.force)

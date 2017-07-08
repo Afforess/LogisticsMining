@@ -54,6 +54,7 @@ data:extend(
         ingredients =
         {
             {"electric-mining-drill", 1},
+            {"logistic-chest-active-provider", 1},
             {"charged-battery", 10}
         },
         result = "robo-mining-drill"
